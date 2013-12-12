@@ -1,0 +1,16 @@
+<div class="row slot" data-slot="{{slot}}">
+  {% if bells_edit %}
+  <select class="newbell" name="type">
+  <option value="">Add..</option>
+  {% for whistle in whistles %}
+    <option value="{{whistle.id}}">{{whistle.name}}</option>
+  {% endfor %}
+  </select>
+  {% endif %}
+  {% for bell in bellcontent %}
+  <br>
+  {{bell.view|safe}}
+  {% endfor %}
+</div>
+
+
