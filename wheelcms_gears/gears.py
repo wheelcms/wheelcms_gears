@@ -2,7 +2,16 @@ from django.db import models
 from wheelcms_axle.content import Content
 from django import forms
 
-class BellBase(models.Model):
+"""
+Ook hier een opsplitsing naar "lean model" en "spoke achtig"
+wrapper
+
+Not sure what pattern I'm using is (and if I should care).
+Keep models lean (skinny), put functionality into separate class
+Do skinny models wear thick coats? 
+
+"""
+class GearBaseModel(models.Model):
     class Meta:
         abstract = True
 
@@ -13,23 +22,23 @@ class BellBase(models.Model):
 
     def save(self, *a, **b):
         self.type = self.__class__.__name__.lower()
-        super(BellBase, self).save(*a, **b)
+        super(GearBaseModel, self).save(*a, **b)
 
-class Bell(BellBase):
+class GearModel(GearBaseModel):
     pass
 
-def bellformfactory(model):
-    m= model
+def gearformfactory(model):
+    m = model
     class Form(forms.ModelForm):
         class Meta:
             model = m
             exclude = ["slot", "content", "position", "type"]
     return Form
 
-class HTMLBell(Bell):
+class HTMLGear(GearModel):
     body = models.TextField(blank=True)
 
-class HTMLBellForm(bellformfactory(HTMLBell)):
+class HTMLGearForm(gearformfactory(HTMLGear)):
     pass
     # body = forms.CharField(widget=TinyMCE(), required=False)
 """
@@ -41,18 +50,15 @@ class HTMLBellForm(bellformfactory(HTMLBell)):
 
 """
 
-class TwitterBell(Bell):
+class TwitterGear(GearModel):
     name = models.CharField(max_length=100)
 
-class TwitterBellForm(bellformfactory(TwitterBell)):
+class TwitterGearForm(gearformfactory(TwitterGear)):
     pass
-
-
-## Whistles are the "spokes"
 
 from django.template.loader import render_to_string
 
-class Whistle(object):
+class GearBox(object):
     id = "base"
     template = ""
 
@@ -66,30 +72,30 @@ class Whistle(object):
         return self.form(data, instance=self.instance)
 
     @classmethod
-    def forBell(cls, bell):
+    def forGear(cls, bell):
         bell = getattr(bell, bell.type)
-        for w in whistles:
+        for w in boxes:
             if w.model == bell.__class__:
                 return w(bell)
         return None
 
-class TwitterWhistle(Whistle):
+class TwitterGearBox(GearBox):
     id = "twitter"
     name = "Twitter fraglet"
     kaka = id
-    model = TwitterBell
-    form = TwitterBellForm
+    model = TwitterGear
+    form = TwitterGearForm
 
     template = "twitterbell.html"
 
-class HTMLWhistle(Whistle):
+class HTMLGearBox(GearBox):
     id = "html"
     name = "HTML fraglet"
     kaka = id
-    model = HTMLBell
-    form = HTMLBellForm
+    model = HTMLGear
+    form = HTMLGearForm
 
     template = "htmlbell.html"
 
-whistles = [HTMLWhistle, TwitterWhistle]
-whistle_map = dict((w.id, w) for w in whistles)
+boxes = [HTMLGearBox, TwitterGearBox]
+boxes_map = dict((w.id, w) for w in boxeswhistles)

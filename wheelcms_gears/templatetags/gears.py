@@ -4,43 +4,43 @@ from django.template.loader import render_to_string
 register = template.Library()
 
 
-@register.tag(name="bell")
-def bell(parser, token):
+@register.tag(name="gear")
+def gear(parser, token):
     try:
-        tag_name, bellname = token.split_contents()
+        tag_name, gearname = token.split_contents()
     except ValueError:
         raise template.TemplateSyntaxError("%r tag requires a single argument"
                                            % token.contents.split()[0])
 
-    bellname = bellname.strip("\"'")
-    return BellNode(bellname)
+    gearname = gearname.strip("\"'")
+    return GearNode(gearname)
 
 from ..models import whistles, Whistle
 
-class BellNode(template.Node):
-    def __init__(self, bellname):
-        self.name = bellname
+class GearNode(template.Node):
+    def __init__(self, gearname):
+        self.name = gearname
 
     def render(self, context):
         instance = context['instance']
-        bells_edit = context.get('bells_edit', False)
+        gears_edit = context.get('gears_edit', False)
 
-        bellcontent = []
-        for b in instance.content().bells.filter(slot=self.name).order_by("position"):
+        gearcontent = []
+        for b in instance.content().gears.filter(slot=self.name).order_by("position"):
             view = None
             form = None
 
-            w = Whistle.forBell(b)
+            w = Whistle.forGear(b)
             if w:
                 view = w.render_view()
-                if bells_edit:
+                if gears_edit:
                     form = w.render_form()
 
-                bellcontent.append(dict(view=view, form=form))
+                gearcontent.append(dict(view=view, form=form))
 
-        tpl = render_to_string("bell_slot.html",
+        tpl = render_to_string("gear_slot.html",
               dict(whistles=(dict(id=w.id, name=w.name) for w in whistles),
-              bellcontent=bellcontent,
+              gearcontent=gearcontent,
               slot=self.name,
-              bells_edit=bells_edit))
+              gears_edit=gears_edit))
         return tpl
